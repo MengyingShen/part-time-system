@@ -1,74 +1,81 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bookmark, Trash2, Loader2 } from "lucide-vue-next";
-import { useRouter } from 'vue-router';
-import { getSavedJobs, unsaveJob, type SavedJob } from '@/lib/savedJobService';
+import { ref, onMounted } from 'vue'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Bookmark, Trash2, Loader2 } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { getSavedJobs, unsaveJob, type SavedJob } from '@/lib/savedJobService'
 // import { useToast } from "@/components/ui/toast/use-toast"
-import { toast } from 'vue-sonner';
+import { toast } from 'vue-sonner'
 
-const router = useRouter();
+const router = useRouter()
 // const { toast } = useToast()
 
-const savedJobs = ref<SavedJob[]>([]);
-const isLoading = ref(true);
-const error = ref<string | null>(null);
+const savedJobs = ref<SavedJob[]>([])
+const isLoading = ref(true)
+const error = ref<string | null>(null)
 
 // 加载保存的工作
 const loadSavedJobs = async () => {
   try {
-    isLoading.value = true;
-    error.value = null;
-    savedJobs.value = await getSavedJobs();
+    isLoading.value = true
+    error.value = null
+    savedJobs.value = await getSavedJobs()
   } catch (err) {
-    console.error('Failed to load saved jobs:', err);
-    error.value = '加载保存的工作失败，请稍后重试';
+    console.error('Failed to load saved jobs:', err)
+    error.value = '加载保存的工作失败，请稍后重试'
     toast({
-      title: "错误",
+      title: '错误',
       description: error.value,
-      variant: "destructive",
-    });
+      variant: 'destructive',
+    })
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
 // 取消保存工作
 const removeSavedJob = async (jobId: number) => {
   try {
-    await unsaveJob(jobId);
-    savedJobs.value = savedJobs.value.filter(job => job.jobId !== jobId);
+    await unsaveJob(jobId)
+    savedJobs.value = savedJobs.value.filter((job) => job.jobId !== jobId)
     toast({
-      title: "成功",
-      description: "已从收藏中移除",
-    });
+      title: '成功',
+      description: '已从收藏中移除',
+    })
   } catch (err) {
-    console.error('Failed to unsave job:', err);
+    console.error('Failed to unsave job:', err)
     toast({
-      title: "错误",
-      description: "移除收藏失败，请稍后重试",
-      variant: "destructive",
-    });
+      title: '错误',
+      description: '移除收藏失败，请稍后重试',
+      variant: 'destructive',
+    })
   }
-};
+}
 
 // 申请工作
 const applyForJob = (jobId: number) => {
   // 实现申请工作的逻辑
-  console.log('Applying for job:', jobId);
-  router.push(`/student/apply/${jobId}`);
-};
+  console.log('Applying for job:', jobId)
+  router.push(`/student/apply/${jobId}`)
+}
 
 // 浏览工作
 const browseJobs = () => {
-  router.push('/student/search');
-};
+  router.push('/student/search')
+}
 
 // 组件挂载时加载数据
 onMounted(() => {
-  loadSavedJobs();
-});
+  loadSavedJobs()
+})
 </script>
 
 <template>
@@ -76,19 +83,19 @@ onMounted(() => {
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold tracking-tight">保存的工作</h1>
     </div>
-    
+
     <!-- 加载状态 -->
     <div v-if="isLoading" class="flex justify-center items-center py-12">
       <Loader2 class="h-8 w-8 animate-spin text-primary" />
       <span class="ml-2">加载中...</span>
     </div>
-    
+
     <!-- 错误状态 -->
     <div v-else-if="error" class="text-center py-12">
       <p class="text-destructive mb-4">{{ error }}</p>
       <Button @click="loadSavedJobs">重试</Button>
     </div>
-    
+
     <!-- 空状态 -->
     <Card v-else-if="savedJobs.length === 0">
       <CardContent class="flex flex-col items-center justify-center py-16">
@@ -100,7 +107,7 @@ onMounted(() => {
         </Button>
       </CardContent>
     </Card>
-    
+
     <!-- 工作列表 -->
     <div v-else class="grid gap-4">
       <Card v-for="job in savedJobs" :key="job.id" class="hover:shadow-md transition-shadow">
@@ -112,8 +119,8 @@ onMounted(() => {
                 {{ job.company }} · {{ job.location }}
               </CardDescription>
             </div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               @click="removeSavedJob(job.jobId)"
               class="text-muted-foreground hover:text-destructive h-8 w-8 p-0"
@@ -125,7 +132,9 @@ onMounted(() => {
         </CardHeader>
         <CardContent class="pb-2">
           <div class="flex items-center text-sm text-muted-foreground mb-2">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 mr-2">
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 mr-2"
+            >
               {{ job.type }}
             </span>
             <span class="text-foreground font-medium">{{ job.salary }}</span>
@@ -136,18 +145,8 @@ onMounted(() => {
         </CardContent>
         <CardFooter class="pt-0">
           <div class="flex w-full justify-between items-center">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              @click="applyForJob(job.jobId)"
-            >
-              立即申请
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              @click="$router.push(`/student/jobs/${job.jobId}`)"
-            >
+            <Button variant="outline" size="sm" @click="applyForJob(job.jobId)"> 立即申请 </Button>
+            <Button variant="ghost" size="sm" @click="$router.push(`/student/jobs/${job.jobId}`)">
               查看详情
             </Button>
           </div>

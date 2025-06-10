@@ -68,9 +68,10 @@ public class SavedJobService {
         Job job = jobRepository.findById(jobId)
             .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        // Only save if job is published
-        if (!JobStatus.PUBLISHED.name().equals(job.getStatus())) {
-            throw new IllegalStateException("Cannot save a job that is not published");
+        // Only save if job is open
+        if (!"OPEN".equals(job.getStatus())) {
+            log.debug("Job status: {}", job.getStatus());
+            throw new IllegalStateException("This job is not currently available for saving");
         }
 
         SavedJob savedJob = new SavedJob();

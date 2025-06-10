@@ -1,33 +1,46 @@
-import { createRouter, createWebHistory, type RouteLocationNormalized, type NavigationGuardNext } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteLocationNormalized,
+  type NavigationGuardNext,
+} from 'vue-router'
 import { toast } from 'vue-sonner'
 
 // Helper function to check if user is authenticated
 const isAuthenticated = (): boolean => {
-  const token = localStorage.getItem('token');
-  return !!token;
-};
+  const token = localStorage.getItem('token')
+  return !!token
+}
 
 // Authentication guard
-const requireAuth = (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+const requireAuth = (
+  to: RouteLocationNormalized,
+  from: RouteLocationNormalized,
+  next: NavigationGuardNext,
+) => {
   if (!isAuthenticated()) {
-    toast.warning('请先登录以继续');
+    toast.warning('请先登录以继续')
     next({
       path: '/login',
-      query: { redirect: to.fullPath !== '/' ? to.fullPath : undefined }
-    });
+      query: { redirect: to.fullPath !== '/' ? to.fullPath : undefined },
+    })
   } else {
-    next();
+    next()
   }
-};
+}
 
 // Public only guard (for login/register pages)
-const requireGuest = (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+const requireGuest = (
+  to: RouteLocationNormalized,
+  from: RouteLocationNormalized,
+  next: NavigationGuardNext,
+) => {
   if (isAuthenticated()) {
-    next({ path: '/student' });
+    next({ path: '/student' })
   } else {
-    next();
+    next()
   }
-};
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,19 +48,19 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('@/views/HomeView.vue')
+      component: () => import('@/views/HomeView.vue'),
     },
     {
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      beforeEnter: requireGuest
+      beforeEnter: requireGuest,
     },
     {
       path: '/register',
       name: 'register',
       component: () => import('@/views/RegisterView.vue'),
-      beforeEnter: requireGuest
+      beforeEnter: requireGuest,
     },
     // Admin routes
     // {
@@ -99,17 +112,17 @@ const router = createRouter({
         { path: 'reviews', component: () => import('@/views/student/reviews.vue') },
         { path: 'write-review', component: () => import('@/views/student/write-review.vue') },
         { path: 'messages', component: () => import('@/views/student/messages.vue') },
-        { path: 'settings', component: () => import('@/views/student/settings.vue') }
-      ]
-    }
-  ]
+        { path: 'settings', component: () => import('@/views/student/settings.vue') },
+      ],
+    },
+  ],
 })
 
 // Global navigation guard
 router.beforeEach((to, from, next) => {
   // Add any global navigation logic here if needed
-  console.log(`Navigating from ${from.path} to ${to.path}`);
-  next();
+  console.log(`Navigating from ${from.path} to ${to.path}`)
+  next()
 })
 
 export default router
