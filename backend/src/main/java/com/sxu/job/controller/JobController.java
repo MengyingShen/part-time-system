@@ -118,10 +118,5 @@ public class JobController {
         }
     }
 
-    @GetMapping("/me/saved-jobs")
-    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
-    public ResponseEntity<?> getSavedJobs() {
-        // TODO: Implement actual logic to fetch saved jobs for the current user
-        return ResponseEntity.ok(List.of());
-    }
+
 }

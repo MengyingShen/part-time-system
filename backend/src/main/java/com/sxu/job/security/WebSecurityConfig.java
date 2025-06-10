@@ -65,32 +65,40 @@ public class WebSecurityConfig {
             // 1. 应用我们下面定义的 CORS 配置
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
-            // 2. ✅ 禁用 CSRF，这是解决之前 403 问题的关键
+            // 2. 禁用 CSRF，这是解决之前 403 问题的关键
             .csrf(csrf -> csrf.disable())
             
             // 3. 配置异常处理，指定未经授权的入口点
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             
-            // 4. ✅ 设置会话管理为无状态，因为我们使用 JWT
+            // 4. 设置会话管理为无状态，因为我们使用 JWT
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
             // 5. 定义请求授权规则
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/auth/**").permitAll(); // 允许认证相关的 API
-                auth.requestMatchers("/api/test/**").permitAll(); // 允许测试 API (如果需要)
-                auth.requestMatchers("/api/public/**").permitAll(); // 允许公共 API
+                // 公共访问的端点
+                auth.requestMatchers("/api/auth/**").permitAll()
+                   .requestMatchers("/api/test/**").permitAll()
+                   .requestMatchers("/api/public/**").permitAll()
+                   .requestMatchers(HttpMethod.GET, "/api/jobs/**").permitAll();
                 
-                // 允许所有 GET 请求到 /api/jobs/**
-                auth.requestMatchers(HttpMethod.GET, "/api/jobs/**").permitAll();
+                // 需要认证的端点
+                auth.requestMatchers("/api/me/**").authenticated();
                 
-                auth.requestMatchers("/api/me/saved-jobs").hasAnyRole("STUDENT", "ADMIN"); // 需要学生或管理员角色
-                auth.anyRequest().authenticated(); // 其他所有请求都需要认证
+                // 需要特定角色的端点
+                auth.requestMatchers("/api/me/saved-jobs").hasAnyRole("STUDENT", "ADMIN");
+                
+                // 其他所有请求都需要认证
+                auth.anyRequest().authenticated();
             })
             
             // 6. 添加自定义的认证提供者和 JWT 过滤器
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
             
+        // 启用调试日志
+        http.headers(headers -> headers.cacheControl(cache -> cache.disable()));
+        
         return http.build();
     }
 
