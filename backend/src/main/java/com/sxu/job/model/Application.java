@@ -27,20 +27,35 @@ public class Application extends BaseEntity {
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
     
-    @Column(name = "cover_letter", columnDefinition = "TEXT")
-    private String coverLetter;
+    @Column(name = "job_title", nullable = false)
+    private String jobTitle;
+    
+    @Column(name = "company", nullable = false)
+    private String company;
+    
+    @Column(name = "location", nullable = false)
+    private String location;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ApplicationStatus status;
     
-    @Column(name = "applied_at", updatable = false, nullable = false)
-    private LocalDateTime appliedAt;
+    @Column(name = "applied_date", nullable = false)
+    private String appliedDate;
+    
+    @Column(name = "interview_date")
+    private String interviewDate;
+    
+    @Column(columnDefinition = "TEXT")
+    private String feedback;
+    
+    @Column(name = "cover_letter", columnDefinition = "TEXT")
+    private String coverLetter;
     
     @PrePersist
     protected void onCreate() {
-        if (appliedAt == null) {
-            appliedAt = LocalDateTime.now();
+        if (appliedDate == null) {
+            appliedDate = java.time.LocalDate.now().toString();
         }
         if (status == null) {
             status = ApplicationStatus.PENDING;
