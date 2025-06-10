@@ -5,6 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +33,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            logger.debug("Processing request to: {}", request.getRequestURI());
+            String requestURI = request.getRequestURI();
+            logger.debug("Processing request to: {}", requestURI);
+            
+            // Skip authentication for public endpoints
+            if (isPublicEndpoint(requestURI)) {
+                logger.debug("Skipping authentication for public endpoint: {}", requestURI);
+                filterChain.doFilter(request, response);
+                return;
+            }
             
             String jwt = parseJwt(request);
             logger.debug("Extracted JWT token: {}", jwt != null ? "[token present]" : "null");
@@ -57,9 +67,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                         context.setAuthentication(authentication);
                         SecurityContextHolder.setContext(context);
                         
-                        logger.debug("Successfully set authentication in security context");
+                        logger.debug("Successfully set authentication in security context for user: {}", username);
+                        
+                        // Continue with the filter chain
+                        filterChain.doFilter(request, response);
+                        return;
                     } else {
                         logger.warn("JWT token validation failed");
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Invalid or expired token");
+                        return;
                     }
                 } catch (Exception e) {
                     logger.error("Cannot set user authentication: {}", e.getMessage(), e);
@@ -69,14 +85,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 }
             } else {
                 // No token provided but trying to access secured endpoint
-                String requestURI = request.getRequestURI();
-                if (requestURI.startsWith("/api/me/") || requestURI.startsWith("/api/admin/")) {
-                    logger.error("No JWT token found for secured endpoint: {}", requestURI);
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized - No token provided");
-                    return;
-                } else {
-                    logger.debug("No JWT token but endpoint doesn't require authentication: {}", requestURI);
-                }
+                logger.error("No JWT token found for secured endpoint: {}", requestURI);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized - No token provided");
+                return;
             }
         } catch (Exception e) {
             logger.error("Error processing authentication: {}", e.getMessage(), e);
@@ -84,13 +95,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing authentication");
             return;
         }
-
-        try {
-            filterChain.doFilter(request, response);
-        } finally {
-            // Clear the security context after the request is processed
-            SecurityContextHolder.clearContext();
-        }
+    }
+    
+    private boolean isPublicEndpoint(String requestURI) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        return requestURI.startsWith("/api/auth/") || 
+               requestURI.startsWith("/api/test/") ||
+               requestURI.startsWith("/api/public/") ||
+               (requestURI.startsWith("/api/jobs") && "GET".equalsIgnoreCase(request.getMethod()));
     }
 
     private String parseJwt(HttpServletRequest request) {
