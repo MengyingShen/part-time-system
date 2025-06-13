@@ -110,11 +110,30 @@ const jobService = {
   },
 
   // Get saved jobs
-  getSavedJobs: async (): Promise<Job[]> => {
+  getSavedJobs: async (): Promise<Array<{id: number, jobId: number}>> => {
     try {
-      const response = await api.get('/me/saved-jobs')
-      return response.data
+      console.log('Fetching saved jobs from /api/me/saved-jobs')
+      const response = await api.get('/api/me/saved-jobs')
+      console.log('Saved jobs response:', response.data)
+      
+      if (!Array.isArray(response.data)) {
+        console.error('Expected array of saved jobs, got:', response.data)
+        return []
+      }
+      
+      // Transform the response to ensure we have jobId
+      const savedJobs = response.data.map(item => ({
+        id: item.id, // The saved job record ID
+        jobId: item.jobId || item.job?.id // The actual job ID
+      })).filter(Boolean)
+      
+      console.log('Processed saved jobs:', savedJobs)
+      return savedJobs
     } catch (error) {
+      if (error.response?.status === 401) {
+        console.log('User not authenticated, returning empty saved jobs')
+        return []
+      }
       console.error('Error fetching saved jobs:', error)
       throw error
     }

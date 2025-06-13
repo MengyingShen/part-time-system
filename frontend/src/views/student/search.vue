@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useCountsStore } from '@/stores/counts'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,7 +24,34 @@ const jobListings = ref<Job[]>([])
 const isLoading = ref(false)
 const isApplying = ref<number | null>(null)
 const isTogglingBookmark = ref<number | null>(null)
+const countsStore = useCountsStore()
 const savedJobIds = ref<number[]>([])
+
+// Initialize saved jobs
+const initSavedJobs = async () => {
+  try {
+    console.log('Fetching saved jobs...')
+    const savedJobs = await jobService.getSavedJobs()
+    console.log('Saved jobs response:', savedJobs)
+    
+    if (!Array.isArray(savedJobs)) {
+      console.error('Saved jobs is not an array:', savedJobs)
+      savedJobIds.value = []
+      return []
+    }
+    
+    const jobIds = savedJobs.map(job => job.jobId).filter(Boolean)
+    console.log('Extracted job IDs:', jobIds)
+    savedJobIds.value = jobIds
+    
+    return jobIds
+    
+  } catch (error) {
+    console.error('Failed to load saved jobs:', error)
+    savedJobIds.value = []
+    return []
+  }
+}
 
 // Load initial jobs
 const loadJobs = async () => {
@@ -127,15 +155,32 @@ const applyForJob = async (jobId: number) => {
 const toggleBookmark = async (jobId: number) => {
   try {
     isTogglingBookmark.value = jobId
-    const { saved } = await jobService.toggleSaveJob(jobId)
-
-    if (saved) {
-      savedJobIds.value = [...savedJobIds.value, jobId]
-      toast.success('职位已保存到您的收藏夹。')
-    } else {
-      savedJobIds.value = savedJobIds.value.filter((id) => id !== jobId)
-      toast.success('职位已从您的收藏夹中移除。')
+    const { saved, error } = await jobService.toggleSaveJob(jobId)
+    
+    if (error) {
+      toast.error(error)
+      return
     }
+    
+    // Update local state
+    const index = savedJobIds.value.indexOf(jobId)
+    let isCurrentlySaved = index !== -1
+    
+    if (saved && !isCurrentlySaved) {
+      // Adding to saved jobs
+      savedJobIds.value.push(jobId)
+      countsStore.incrementSavedJobsCount()
+      toast.success('工作已保存')
+    } else if (!saved && isCurrentlySaved) {
+      // Removing from saved jobs
+      savedJobIds.value.splice(index, 1)
+      countsStore.decrementSavedJobsCount()
+      toast.success('已取消保存工作')
+    }
+    
+    // Verify the count is in sync with the actual saved jobs
+    console.log('After toggle - Local saved jobs:', savedJobIds.value.length, 'Store count:', countsStore.savedJobsCount)
+    
   } catch (error) {
     console.error('Failed to toggle bookmark:', error)
     toast.error('保存职位时出错，请稍后重试。')
@@ -183,25 +228,9 @@ onMounted(async () => {
   loadInitialSearchParams()
   await searchJobs()
   
-  // Load saved jobs
-  try {
-    console.log('Fetching saved jobs...')
-    const savedJobs = await jobService.getSavedJobs()
-    console.log('Saved jobs response:', savedJobs)
-    
-    // Ensure we're getting an array and extract job IDs
-    if (Array.isArray(savedJobs)) {
-      // Use jobId instead of id to match the actual job listings
-      savedJobIds.value = savedJobs.map(job => job.jobId)
-      console.log('Mapped saved job IDs:', savedJobIds.value)
-      console.log('Current job listings:', jobListings.value.map(j => ({id: j.id, title: j.title})))
-    } else {
-      console.error('Saved jobs is not an array:', savedJobs)
-      savedJobIds.value = []
-    }
-  } catch (error) {
-    console.error('Failed to load saved jobs:', error)
-  }
+  // Initialize saved jobs and update counts
+  const savedJobIds = await initSavedJobs()
+  countsStore.savedJobsCount = savedJobIds.length
 })
 </script>
 

@@ -12,11 +12,11 @@ import {
 import { Bookmark, Trash2, Loader2 } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { getSavedJobs, unsaveJob, type SavedJob } from '@/lib/savedJobService'
-// import { useToast } from "@/components/ui/toast/use-toast"
 import { toast } from 'vue-sonner'
+import { useCountsStore } from '@/stores/counts' // Add counts store
 
 const router = useRouter()
-// const { toast } = useToast()
+const countsStore = useCountsStore()
 
 const savedJobs = ref<SavedJob[]>([])
 const isLoading = ref(true)
@@ -46,6 +46,10 @@ const removeSavedJob = async (jobId: number) => {
   try {
     await unsaveJob(jobId)
     savedJobs.value = savedJobs.value.filter((job) => job.jobId !== jobId)
+    
+    // Update the counts store
+    countsStore.decrementSavedJobsCount()
+    
     toast({
       title: '成功',
       description: '已从收藏中移除',

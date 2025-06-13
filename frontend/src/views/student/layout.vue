@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,9 +17,63 @@ import {
   Star,
   User,
 } from 'lucide-vue-next'
+import { useCountsStore } from '@/stores/counts'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import api from '@/lib/api'
+const countsStore = useCountsStore()
+
+// Fetch counts when component mounts and when authentication state changes
+import { watch, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+
+const initializeAuthAndCounts = async () => {
+  console.log('Initializing auth and counts...')
+  
+  try {
+    // Initialize auth state from token
+    const isAuthenticated = await authStore.initAuth()
+    console.log('Auth initialization result:', isAuthenticated)
+    
+    if (isAuthenticated) {
+      console.log('User is authenticated, fetching counts...')
+      try {
+        await countsStore.fetchCounts()
+        console.log('Counts after fetch:', {
+          saved: countsStore.savedJobsCount,
+          applications: countsStore.applicationsCount
+        })
+      } catch (error) {
+        console.error('Failed to fetch counts:', error)
+      }
+    } else {
+      console.log('User is not authenticated, resetting counts')
+      countsStore.$reset()
+    }
+  } catch (error) {
+    console.error('Error during initialization:', error)
+    countsStore.$reset()
+  }
+}
+
+// Initial fetch
+onMounted(() => {
+  console.log('Layout mounted, initializing auth and counts...')
+  initializeAuthAndCounts()
+})
+
+// Watch for auth state changes
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  console.log('Auth state changed, isAuthenticated:', isAuthenticated)
+  if (isAuthenticated) {
+    initializeAuthAndCounts()
+  } else {
+    countsStore.$reset()
+  }
+})
 
 // Logout function
 const handleLogout = () => {
@@ -99,7 +154,7 @@ const handleLogout = () => {
               <Briefcase class="h-4 w-4" />
             </div>
             <span>我的申请</span>
-            <Badge class="ml-auto bg-blue-600 text-xs">3</Badge>
+            <Badge class="ml-auto bg-blue-600 text-xs">{{ countsStore.applicationsCount }}</Badge>
           </RouterLink>
         </Button>
         <Button variant="ghost" class="justify-start gap-2 hover:bg-indigo-200" asChild>
@@ -113,7 +168,7 @@ const handleLogout = () => {
               <Bookmark class="h-4 w-4" />
             </div>
             <span>保存的工作</span>
-            <Badge class="ml-auto bg-blue-600 text-xs">12</Badge>
+            <Badge class="ml-auto bg-blue-600 text-xs">{{ countsStore.savedJobsCount }}</Badge>
           </RouterLink>
         </Button>
         <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 mt-6">
