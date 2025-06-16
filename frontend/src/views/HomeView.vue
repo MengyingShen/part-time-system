@@ -17,7 +17,7 @@ const data = ref([
     title: '前端开发实习生',
     company: '科技创新有限公司',
     location: '北京市海淀区',
-    salary: '¥35/小时',
+    salary: '¥100/小时',
     description: '负责开发和维护公司的网站和移动应用程序界面',
     postedDays: 2,
     imageUrl:
@@ -28,7 +28,7 @@ const data = ref([
     title: '市场营销助理',
     company: '领航市场营销',
     location: '远程',
-    salary: '¥30/小时',
+    salary: '¥100/小时',
     description: '协助社交媒体营销和内容创作，策划线上活动',
     postedDays: 3,
     imageUrl:
@@ -39,7 +39,7 @@ const data = ref([
     title: '数据分析实习生',
     company: '数据智能科技',
     location: '上海市浦东新区',
-    salary: '¥40/小时',
+    salary: '¥80/小时',
     description: '协助收集、处理和分析业务数据，制作分析报告',
     postedDays: 1,
     imageUrl:
@@ -50,7 +50,7 @@ const data = ref([
     title: '咖啡师助理',
     company: '市中心咖啡馆',
     location: '北京市朝阳区',
-    salary: '¥30/小时',
+    salary: '¥90/小时',
     description: '学习制作各类咖啡饮品，提供优质的客户服务',
     postedDays: 5,
     imageUrl:
@@ -61,7 +61,7 @@ const data = ref([
     title: '平面设计实习生',
     company: '创意设计工作室',
     location: '杭州市西湖区',
-    salary: '¥35/小时',
+    salary: '¥80/小时',
     description: '参与品牌视觉设计，制作宣传材料和社交媒体图像',
     postedDays: 4,
     imageUrl:

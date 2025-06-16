@@ -113,6 +113,7 @@ const router = createRouter({
         { path: 'write-review', component: () => import('@/views/student/write-review.vue') },
         { path: 'messages', component: () => import('@/views/student/messages.vue') },
         { path: 'settings', component: () => import('@/views/student/settings.vue') },
+        { path: 'llm', component: () => import('@/views/student/llm.vue') },
       ],
     },
   ],

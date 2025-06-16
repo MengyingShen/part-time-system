@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Search,
   Star,
+  Bot,
   User,
 } from 'lucide-vue-next'
 import { useCountsStore } from '@/stores/counts'
@@ -214,7 +215,19 @@ const handleLogout = () => {
             <Badge class="ml-auto bg-red-600 text-xs">2</Badge>
           </RouterLink>
         </Button>
-
+        <Button variant="ghost" class="justify-start gap-2 hover:bg-indigo-200" asChild>
+          <RouterLink to="/student/llm" class="relative group">
+            <span
+              class="absolute left-0 w-1 h-6 bg-indigo-600 rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity"
+            ></span>
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-md bg-purple-100 text-purple-800 mr-2"
+            >
+              <Bot class="h-4 w-4" />
+            </div>
+            <span>智能客服</span>
+          </RouterLink>
+        </Button>
         <Separator class="my-2" />
 
         <Button variant="ghost" class="justify-start gap-2 hover:bg-indigo-200" asChild>

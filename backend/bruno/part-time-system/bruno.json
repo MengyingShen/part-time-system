@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "part-time-system",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
