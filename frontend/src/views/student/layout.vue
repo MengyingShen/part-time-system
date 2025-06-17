@@ -17,6 +17,7 @@ import {
   Star,
   Bot,
   User,
+  ChartLine,
 } from 'lucide-vue-next'
 import { useCountsStore } from '@/stores/counts'
 import { Separator } from '@/components/ui/separator'
@@ -126,6 +127,19 @@ const handleLogout = () => {
             </div>
             <span>仪表盘</span>
             <Badge variant="outline" class="ml-auto text-xs">新</Badge>
+          </RouterLink>
+        </Button>
+        <Button variant="ghost" class="justify-start gap-2 hover:bg-indigo-200" asChild>
+          <RouterLink to="/student/data-dashboard" class="relative group">
+            <span
+              class="absolute left-0 w-1 h-6 bg-indigo-600 rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity"
+            ></span>
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-100 text-indigo-800 mr-2"
+            >
+              <ChartLine class="h-4 w-4" />
+            </div>
+            <span>数据总览</span>
           </RouterLink>
         </Button>
         <Button variant="ghost" class="justify-start gap-2 hover:bg-indigo-200" asChild>

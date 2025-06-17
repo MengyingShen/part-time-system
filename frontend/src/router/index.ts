@@ -114,6 +114,7 @@ const router = createRouter({
         { path: 'messages', component: () => import('@/views/student/messages.vue') },
         { path: 'settings', component: () => import('@/views/student/settings.vue') },
         { path: 'llm', component: () => import('@/views/student/llm.vue') },
+        { path: 'data-dashboard', component: () => import('@/views/student/dataDashboard.vue') },
       ],
     },
   ],
