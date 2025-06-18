@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import { onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import {
   Activity,
@@ -30,6 +30,7 @@ const countsStore = useCountsStore()
 import { watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
+const router = useRouter()
 const authStore = useAuthStore()
 
 const initializeAuthAndCounts = async () => {
@@ -76,13 +77,15 @@ watch(() => authStore.isAuthenticated, (isAuthenticated) => {
     countsStore.$reset()
   }
 })
-
 // Logout function
 const handleLogout = () => {
   // Add logout logic here
   console.log('Logging out...')
-  // router.push('/login')
+  // remove token
+  localStorage.removeItem('token')
+  router.push('/login')
 }
+  
 </script>
 
 <template>
@@ -293,13 +296,11 @@ const handleLogout = () => {
           <Button
             variant="ghost"
             size="icon"
-            asChild
+            @click="handleLogout"
             class="text-red-500 hover:text-red-700 hover:bg-red-50"
           >
-            <RouterLink to="/login">
-              <LogOut class="h-5 w-5" />
-              <span class="sr-only">登出</span>
-            </RouterLink>
+            <LogOut class="h-5 w-5" />
+            <span class="sr-only">登出</span>
           </Button>
         </div>
       </header>
